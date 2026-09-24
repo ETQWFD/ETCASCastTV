@@ -316,6 +316,10 @@ public class TvMainActivity extends AppCompatActivity {
     }
 
     private void enterVideo(String uri, String title) {
+        if (isImageUri(uri)) {
+            enterImage(uri, title);
+            return;
+        }
         mode = MODE_VIDEO;
         handler.removeCallbacks(loadTicker);
         stopMirror();
@@ -347,7 +351,7 @@ public class TvMainActivity extends AppCompatActivity {
         loadingRoot.setVisibility(View.GONE);
         infoPanel.setVisibility(View.GONE);
         imageView.setVisibility(View.VISIBLE);
-        tvStatus.setText(getString(R.string.main_casting) + (title == null || title.isEmpty() ? "" : " · " + title));
+        tvStatus.setText(R.string.main_image_loading);
         loadImage(uri);
     }
 
@@ -524,6 +528,20 @@ public class TvMainActivity extends AppCompatActivity {
         if (mirrorThread != null) {
             mirrorThread.interrupt();
             mirrorThread = null;
+        }
+    }
+
+    private static boolean isImageUri(String uri) {
+        if (uri == null) return false;
+        try {
+            String lower = uri.toLowerCase();
+            String[] exts = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"};
+            for (String e : exts) {
+                if (lower.contains(e)) return true;
+            }
+            return lower.contains("img=1") || lower.contains("img=1&");
+        } catch (Exception e) {
+            return false;
         }
     }
 

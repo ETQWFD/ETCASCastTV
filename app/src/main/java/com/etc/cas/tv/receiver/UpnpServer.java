@@ -277,6 +277,7 @@ public class UpnpServer {
             }
             if (q >= 0) {
                 String query = uri.substring(q);
+                if (query.contains("img=1")) return true;
                 int eq = query.indexOf("u=");
                 if (eq >= 0) {
                     String v = query.substring(eq + 2);
