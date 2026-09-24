@@ -102,6 +102,13 @@ public class TvMainActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onSpeedChanged(float speed) {
+            if (player != null) {
+                player.setPlaybackParameters(new androidx.media3.common.PlaybackParameters(speed, 1f));
+            }
+        }
+
+        @Override
         public void onPaired() {
             enterLoading();
         }

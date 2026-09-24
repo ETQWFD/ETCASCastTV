@@ -14,6 +14,8 @@ public final class CastState {
 
         void onVolumeChanged(int volume);
 
+        void onSpeedChanged(float speed);
+
         void onPaired();
 
         void onCleared();
@@ -28,6 +30,7 @@ public final class CastState {
     private volatile boolean playing;
     private volatile boolean paired;
     private volatile int volume = 80;
+    private volatile float speed = 1.0f;
     private volatile long positionMs;
     private volatile long durationMs = -1L;
 
@@ -94,6 +97,17 @@ public final class CastState {
         main.post(() -> {
             for (Listener l : listeners) l.onVolumeChanged(volume);
         });
+    }
+
+    public void setSpeed(final float s) {
+        this.speed = Math.max(0.25f, Math.min(2.0f, s));
+        main.post(() -> {
+            for (Listener l : listeners) l.onSpeedChanged(speed);
+        });
+    }
+
+    public float getSpeed() {
+        return speed;
     }
 
     public String getUri() {

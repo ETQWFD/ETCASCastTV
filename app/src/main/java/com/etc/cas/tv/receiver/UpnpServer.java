@@ -124,6 +124,8 @@ public class UpnpServer {
                         + "\",\"android\":\"" + esc(androidVersion) + "\",\"pair\":true}");
             } else if ("POST".equalsIgnoreCase(method) && path.startsWith("/etcas/pair")) {
                 handlePair(out, body);
+            } else if (path.startsWith("/etcas/speed")) {
+                handleSpeed(out, body, path);
             } else if ("POST".equalsIgnoreCase(method) && path.contains("AVTransport")) {
                 writeXml(out, handleAvt(soapAction, body));
             } else if ("POST".equalsIgnoreCase(method) && path.contains("RenderingControl")) {
@@ -191,6 +193,35 @@ public class UpnpServer {
         byte[] data = ("{\"ok\":" + ok + "}").getBytes(StandardCharsets.UTF_8);
         String status = ok ? "200 OK" : "403 Forbidden";
         out.write(("HTTP/1.1 " + status + "\r\nContent-Type: application/json; charset=utf-8\r\n"
+                + "Content-Length: " + data.length + "\r\nConnection: close\r\n\r\n")
+                .getBytes(StandardCharsets.UTF_8));
+        out.write(data);
+    }
+
+    private void handleSpeed(OutputStream out, String body, String path) throws Exception {
+        float rate = 1.0f;
+        String raw = null;
+        if (body != null && !body.isEmpty()) {
+            for (String kv : body.split("&")) {
+                int eq = kv.indexOf('=');
+                if (eq > 0 && "rate".equals(kv.substring(0, eq))) raw = kv.substring(eq + 1);
+            }
+        }
+        if (raw == null && path != null && path.contains("rate=")) {
+            int idx = path.indexOf("rate=");
+            raw = path.substring(idx + 5);
+            int amp = raw.indexOf('&');
+            if (amp >= 0) raw = raw.substring(0, amp);
+        }
+        if (raw != null) {
+            try {
+                rate = Float.parseFloat(java.net.URLDecoder.decode(raw, "UTF-8"));
+            } catch (Exception ignored) {
+            }
+        }
+        CastState.get().setSpeed(rate);
+        byte[] data = ("{\"ok\":true,\"rate\":" + rate + "}").getBytes(StandardCharsets.UTF_8);
+        out.write(("HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n"
                 + "Content-Length: " + data.length + "\r\nConnection: close\r\n\r\n")
                 .getBytes(StandardCharsets.UTF_8));
         out.write(data);
